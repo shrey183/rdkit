@@ -39,7 +39,7 @@ MolSupplier* GeneralFileReader::read(){
 	std::cout << "Valid File Format" << std::endl;
 
 	// At this stage we have a valid file format
-	std::ifstream strm(fname.c_str());	
+	std::ifstream strm = new std::ifstream(fname.c_str());	
 	
 	// CASE 1: SDF Format
 	if(format == "sdf") {
