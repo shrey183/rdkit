@@ -39,12 +39,12 @@ MolSupplier* GeneralFileReader::read(){
 	std::cout << "Valid File Format" << std::endl;
 
 	// At this stage we have a valid file format
-	std::ifstream strm = new std::ifstream(fname.c_str());	
+	std::ifstream* strm = new std::ifstream(fname.c_str());	
 	
 	// CASE 1: SDF Format
 	if(format == "sdf") {
 		std::cout << "File Format: " << format << std::endl;
-		ForwardSDMolSupplier* sdsup = new ForwardSDMolSupplier(&strm, opt.takeOwnership, opt.sanitize, opt.removeHs, opt.strictParsing);	
+		ForwardSDMolSupplier* sdsup = new ForwardSDMolSupplier(strm, opt.takeOwnership, opt.sanitize, opt.removeHs, opt.strictParsing);	
 		return sdsup;
 	
 	}

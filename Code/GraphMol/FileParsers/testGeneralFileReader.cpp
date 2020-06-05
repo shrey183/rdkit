@@ -20,21 +20,19 @@ int testGeneralReader(){
 	
 	// Test SDF with default options
 	std::string fname =
-	      rdbase + "/Code/GraphMol/FileParsers/test_data/withHs.sdf";	
+	      rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf";	
 	SupplierOption opt_sdf; 	
-  opt_sdf.takeOwnership = true;
-  opt_sdf.sanitize = true;
-  opt_sdf.removeHs = true;
-  opt_sdf.strictParsing = true;
+  opt_sdf.takeOwnership = false;
 	GeneralFileReader gfr(fname, opt_sdf);
 	MolSupplier* sdsup = gfr.read();
 
-	unsigned int i = 0;
+  unsigned int i = 0;
     while (!sdsup->atEnd()) {
       ROMol *nmol = sdsup->next();
-    	std::cout << "Obtained next ROMol\n"; 
-		  TEST_ASSERT(nmol || sdsup->atEnd());
+      TEST_ASSERT(nmol || sdsup->atEnd());
       if (nmol) {
+        TEST_ASSERT(nmol->hasProp(common_properties::_Name));
+        TEST_ASSERT(nmol->hasProp("NCI_AIDS_Antiviral_Screen_Conclusion"));
         delete nmol;
         i++;
       }
