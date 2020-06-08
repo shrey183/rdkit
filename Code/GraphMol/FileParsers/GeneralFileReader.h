@@ -1,39 +1,38 @@
 #ifndef GENERAL_FILE_READER_H
 #define GENERAL_FILE_READER_H
-#include <RDGeneral/test.h>
-#include <GraphMol/RDKitBase.h>
 #include <string>
 #include <iostream>
-#include <fstream>
-#include <map>
-#include <memory>
+#include <vector>
+#include <boost/filesystem.hpp>
+#include "SupplierOption.h"
 
 #include "MolSupplier.h"
-#include "MolWriters.h"
-#include "FileParsers.h"
-#include "FileParserUtils.h"
-#include <RDGeneral/FileParseException.h>
 #include <RDGeneral/BadFileException.h>
-#include <RDGeneral/RDLog.h>
-#include <GraphMol/MonomerInfo.h>
-#include <GraphMol/SmilesParse/SmilesWrite.h>
-#include <GraphMol/SmilesParse/SmilesParse.h>
-#include <GraphMol/Depictor/RDDepictor.h>
-#include "SupplierOption.h"
+#include <RDStreams/streams.h>
 
 
 using namespace RDKit;
+namespace fs = boost::filesystem;
+
 
 class GeneralFileReader{
 	
 public:
-	std::string fname; // file name
-	SupplierOption opt; 
+	std::string fname; 	// file name
+	SupplierOption opt; // options for the Mol Supplier 
 public:
-	GeneralFileReader(std::string fileName); // use default options
+	GeneralFileReader(std::string fileName);
 	GeneralFileReader(std::string fileName, SupplierOption options);
-	bool valid(std::string format);
-	MolSupplier* read();
+		
+	/*
+		Function to check the validity of the file and compression format
+	*/
+	bool valid(std::string file_format, std::string compression_format);
+
+	/*
+		Get MolSupplier Object based on the file and compression format
+	*/
+	MolSupplier* getSupplier();
 	
 };
 

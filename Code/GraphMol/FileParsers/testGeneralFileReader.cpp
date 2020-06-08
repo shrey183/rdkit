@@ -1,56 +1,129 @@
-//
-//   Copyright (C) 2002-2019 Greg Landrum and Rational Discovery LLC
-//
-//   @@ All Rights Reserved @@
-//  This file is part of the RDKit.
-//  The contents are covered by the terms of the BSD license
-//  which is included in the file license.txt, found at the root
-//  of the RDKit source tree.
-//
+#include <RDGeneral/test.h>
+#include <GraphMol/RDKitBase.h>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <memory>
+#include <RDGeneral/FileParseException.h>
+#include <RDGeneral/RDLog.h>
 #include "GeneralFileReader.h"
-namespace io = boost::iostreams;
 
+#include <boost/iostreams/device/file.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+
+namespace io = boost::iostreams;
 using namespace RDKit;
 
 int testGeneralReader(){
 	
-	std::cout << "TESTING GENERAL READER" << std::endl;
 	// Test with SDF files
 	std::string rdbase = getenv("RDBASE");
 	
 	// Test SDF with default options
 	std::string fname =
 	      rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf";	
+   std::string fname2 =
+      rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf.gz";
+  
+  // Get supplier for uncompressed file
+	std::cout << "Testing Supplier for uncompressed SDF files\n";
 	SupplierOption opt_sdf; 	
-  opt_sdf.takeOwnership = false;
+  opt_sdf.with_stream = false;
 	GeneralFileReader gfr(fname, opt_sdf);
-	MolSupplier* sdsup = gfr.read();
+	MolSupplier* sdsup = gfr.getSupplier();
 
   unsigned int i = 0;
-    while (!sdsup->atEnd()) {
-      ROMol *nmol = sdsup->next();
-      TEST_ASSERT(nmol || sdsup->atEnd());
-      if (nmol) {
-        TEST_ASSERT(nmol->hasProp(common_properties::_Name));
-        TEST_ASSERT(nmol->hasProp("NCI_AIDS_Antiviral_Screen_Conclusion"));
-        delete nmol;
-        i++;
-      }
+  while (!sdsup->atEnd()) {
+    ROMol *nmol = sdsup->next();
+    TEST_ASSERT(nmol || sdsup->atEnd());
+    if (nmol) {
+      TEST_ASSERT(nmol->hasProp(common_properties::_Name));
+      TEST_ASSERT(nmol->hasProp("NCI_AIDS_Antiviral_Screen_Conclusion"));
+      delete nmol;
+      i++;
     }
-    TEST_ASSERT(i == 16);
-	/*
-	// Test SMI with some options    
-	fname = rdbase + "/Code/GraphMol/FileParsers/test_data/fewSmi.2.csv";
-	SupplierOption opt_smi;
-	opt_smi.delimiter = ",";
-	opt_smi.smilesColumn = 1;
-	opt_smi.nameColumn = 0;
-	opt_smi.titleLine = true; 
-	opt_smi.sanitize = true;
-	GeneralFileReader gfr2(fname, opt_smi);
-	MolSupplier* smiSup = gfr2.read();
+  }
+  TEST_ASSERT(i == 16);
+
+	/*	
+	// SDF supplier for compressed file formats
+	std::cout << "Testing Supplier for uncompressed SDF files\n";	
+  SupplierOption opt_sdf2;
+  opt_sdf2.with_stream = true;
+  opt_sdf2.takeOwnership = false;
+	GeneralFileReader gfr2(fname2, opt_sdf2);
+	MolSupplier* sdsup2 = gfr2.getSupplier();
+  i = 0;
+  while (!sdsup2->atEnd()) {
+    ROMol *nmol = sdsup2->next();
+    if (nmol) {
+      TEST_ASSERT(nmol->hasProp(common_properties::_Name));
+      TEST_ASSERT(nmol->hasProp("NCI_AIDS_Antiviral_Screen_Conclusion"));
+      delete nmol;
+      i++;
+    }
+  }
+  TEST_ASSERT(i == 16);
 	*/
-	std::cout << "END OF TEST OF GENERAL READER" << std::endl;
+	
+
+	// Test MAE Supplier
+    fname = rdbase + "/Code/GraphMol/FileParsers/test_data/props_test.mae";
+	  SupplierOption opt_sdf3;
+		GeneralFileReader gfr3(fname, opt_sdf3);
+		MolSupplier* maesup = gfr3.getSupplier();
+ 
+    std::unique_ptr<ROMol> nmol(maesup->next());
+    TEST_ASSERT(nmol);
+
+    // Test mol properties
+    TEST_ASSERT(nmol->hasProp(common_properties::_Name));
+    TEST_ASSERT(nmol->hasProp("b_sd_chiral_flag"));
+    TEST_ASSERT(nmol->getProp<bool>("b_sd_chiral_flag") == false);
+    TEST_ASSERT(nmol->hasProp("i_sd_NSC"));
+    TEST_ASSERT(nmol->getProp<int>("i_sd_NSC") == 48);
+    TEST_ASSERT(nmol->hasProp("s_m_entry_name"));
+    TEST_ASSERT(nmol->getProp<std::string>("s_m_entry_name") ==
+                "NCI_aids_few.1");
+    TEST_ASSERT(nmol->hasProp("r_f3d_dummy"));
+    TEST_ASSERT(abs(nmol->getProp<double>("r_f3d_dummy") - 42.123) < 0.0001);
+
+    // Test atom properties
+    TEST_ASSERT(nmol->getNumAtoms() == 19);
+    for (int i = 0; i < 19; ++i) {
+      const auto *atom = nmol->getAtomWithIdx(i);
+
+      // The integer property is present for all atoms
+      TEST_ASSERT(atom->hasProp("i_m_minimize_atom_index"));
+      TEST_ASSERT(atom->getProp<int>("i_m_minimize_atom_index") == 1 + i);
+
+      // The bool property is only defined for i < 10
+      if (i < 10) {
+        TEST_ASSERT(atom->hasProp("b_m_dummy"));
+        TEST_ASSERT(atom->getProp<bool>("b_m_dummy") ==
+                    static_cast<bool>(i % 2));
+      } else {
+        TEST_ASSERT(!atom->hasProp("b_m_dummy"));
+      }
+
+      // The real property is only defined for i >= 10
+      if (i >= 10) {
+        TEST_ASSERT(atom->hasProp("r_f3d_dummy"));
+        TEST_ASSERT(abs(atom->getProp<double>("r_f3d_dummy") - (19.1 - i)) <
+                    0.0001);
+      } else {
+        TEST_ASSERT(!atom->hasProp("r_f3d_dummy"));
+      }
+
+      // All atoms have the string prop
+      TEST_ASSERT(atom->hasProp("s_m_dummy"));
+      TEST_ASSERT(atom->getProp<std::string>("s_m_dummy") ==
+                  std::to_string(19 - i));
+    }
+
+    TEST_ASSERT(maesup->atEnd());
+  	
 	return 1;
 
 }
