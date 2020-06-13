@@ -45,7 +45,6 @@ rdkit_library(FileParsers
               ProximityBonds.cpp
               SequenceParsers.cpp SequenceWriters.cpp
               SVGParser.cpp
-              GeneralFileReader.cpp
               LINK_LIBRARIES Depictor SmilesParse GraphMol ${RDK_COORDGEN_LIBS} ${regex_lib} ${link_iostreams})
 
 rdkit_headers(FileParsers.h
@@ -54,7 +53,6 @@ rdkit_headers(FileParsers.h
               MolSupplier.h
               MolWriters.h
               SequenceParsers.h SequenceWriters.h
-              SupplierOption.h
               GeneralFileReader.h
               DEST GraphMol/FileParsers)
 

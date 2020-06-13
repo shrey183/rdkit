@@ -19,17 +19,13 @@ int testGeneralReader(){
 	
 	// Test with SDF files
 	std::string rdbase = getenv("RDBASE");
-	
-	// Test SDF with default options
-	std::string fname =
-	      rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf";	
-   std::string fname2 =
-      rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf.gz";
-  
-  // Get supplier for uncompressed file
+
+
+// Open uncompressed SDF file format
+{
 	std::cout << "Testing Supplier for uncompressed SDF files\n";
-	SupplierOption opt_sdf; 	
-  opt_sdf.with_stream = false;
+	std::string fname = rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf";	
+	struct SupplierOption opt_sdf; 	
 	GeneralFileReader gfr(fname, opt_sdf);
 	MolSupplier* sdsup = gfr.getSupplier();
 
@@ -45,14 +41,15 @@ int testGeneralReader(){
     }
   }
   TEST_ASSERT(i == 16);
-
-	/*	
-	// SDF supplier for compressed file formats
-	std::cout << "Testing Supplier for uncompressed SDF files\n";	
-  SupplierOption opt_sdf2;
-  opt_sdf2.with_stream = true;
+}
+			
+// Open compressed SDF file format
+{
+	std::cout << "Testing Supplier for compressed SDF files\n";	
+  fname = rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf.gz";
+	struct SupplierOption opt_sdf2;
   opt_sdf2.takeOwnership = false;
-	GeneralFileReader gfr2(fname2, opt_sdf2);
+	GeneralFileReader gfr2(fname, opt_sdf2);
 	MolSupplier* sdsup2 = gfr2.getSupplier();
   i = 0;
   while (!sdsup2->atEnd()) {
@@ -65,12 +62,12 @@ int testGeneralReader(){
     }
   }
   TEST_ASSERT(i == 16);
-	*/
-	
+}
 
-	// Test MAE Supplier
+// Open uncompressed MAE file format
+{
     fname = rdbase + "/Code/GraphMol/FileParsers/test_data/props_test.mae";
-	  SupplierOption opt_sdf3;
+	  struct SupplierOption opt_sdf3;
 		GeneralFileReader gfr3(fname, opt_sdf3);
 		MolSupplier* maesup = gfr3.getSupplier();
  
@@ -123,7 +120,8 @@ int testGeneralReader(){
     }
 
     TEST_ASSERT(maesup->atEnd());
-  	
+} 	
+
 	return 1;
 
 }
