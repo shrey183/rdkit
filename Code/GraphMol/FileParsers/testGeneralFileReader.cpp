@@ -22,7 +22,7 @@ int testGeneralReader(){
 
 
 // Open uncompressed SDF file format
-{
+
 	std::cout << "Testing Supplier for uncompressed SDF files\n";
 	std::string fname = rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf";	
 	struct SupplierOption opt_sdf; 	
@@ -41,10 +41,10 @@ int testGeneralReader(){
     }
   }
   TEST_ASSERT(i == 16);
-}
+
 			
 // Open compressed SDF file format
-{
+
 	std::cout << "Testing Supplier for compressed SDF files\n";	
   fname = rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf.gz";
 	struct SupplierOption opt_sdf2;
@@ -62,10 +62,9 @@ int testGeneralReader(){
     }
   }
   TEST_ASSERT(i == 16);
-}
 
 // Open uncompressed MAE file format
-{
+		std::cout << "Testing Supplier for uncompressed MAE files\n";	
     fname = rdbase + "/Code/GraphMol/FileParsers/test_data/props_test.mae";
 	  struct SupplierOption opt_sdf3;
 		GeneralFileReader gfr3(fname, opt_sdf3);
@@ -120,7 +119,7 @@ int testGeneralReader(){
     }
 
     TEST_ASSERT(maesup->atEnd());
-} 	
+ 	
 
 	return 1;
 
