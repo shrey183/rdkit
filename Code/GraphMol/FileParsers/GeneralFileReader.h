@@ -34,12 +34,12 @@ namespace RDKit
 
 		public:
 			std::string fname;	// file name
-		    std::string file_format, compression_format;
+		  std::string file_format, compression_format;
 
 		struct SupplierOption opt;	// options for the Mol Supplier 
 		public:
 			GeneralFileReader(std::string fileName);
-		    GeneralFileReader(std::string fileName, struct SupplierOption options);
+		  GeneralFileReader(std::string fileName, struct SupplierOption options);
 
 		/*
 		  Function to check the validity of the file and compression format
@@ -74,15 +74,33 @@ namespace RDKit
 
 	bool GeneralFileReader::valid()
 	{
-		std::vector<std::string > file_formats{ "sdf", "mae", "smi", "tdt" };
+
+		std::vector<std::string > file_formats{ "sdf", "mae", "smi", "csv", "txt", "tsv", "tdt"};
 		std::vector<std::string > compression_formats{ "gz" };
 
-		bool flag_fileFormat = (std::find(file_formats.begin(), file_formats.end(), file_format) != file_formats.end());
-		bool flag_compressionFormat = true;
-		if (compression_format.compare("") != 0)
-			flag_compressionFormat = std::find(compression_formats.begin(), compression_formats.end(), compression_format) != compression_formats.end();
+		if(file_format.compare("maegz") == 0)
+		{
+			// we decompose manually
+			file_format = "mae";
+			compression_format = "gz";
+			return true;
+		}
 
-		return flag_fileFormat && flag_compressionFormat;
+	
+		// we need to have a valid file format
+		bool flag_fileFormat = std::find(file_formats.begin(), file_formats.end(), file_format) != file_formats.end();
+		 
+		if (compression_format.compare("") != 0){
+			bool flag_compressionFormat = std::find(compression_formats.begin(), compression_formats.end(), compression_format) != compression_formats.end();
+			if(flag_compressionFormat == false){
+				file_format = compression_format;
+				compression_format = "";
+				flag_fileFormat = std::find(file_formats.begin(), file_formats.end(), file_format) != file_formats.end();
+			}	
+			
+}
+
+		return flag_fileFormat;
 	}
 
 	void RDKit::GeneralFileReader::setFormat()
@@ -91,14 +109,14 @@ namespace RDKit
 		std::string fileName = p.filename().string();
 		int dots = std::count(fileName.begin(), fileName.end(), '.');
 
-		if (dots == 0) throw BadFileException("Recieved Invalid File Format, no extension or compression");
+		if (dots == 0) throw std::invalid_argument("Recieved Invalid File Format, no extension or compression");
 
 		else if (dots == 1)
 		{
 			// there is a file format but no compression format
 			int pos = fileName.find(".");
 			file_format = fileName.substr(pos + 1);
-			if (!valid()) throw BadFileException("Recieved Invalid File Format");
+			if (!valid()) throw std::invalid_argument("Recieved Invalid File Format");
 		}
 		else
 		{
@@ -107,8 +125,9 @@ namespace RDKit
 			int p1 = fileName.rfind(".");
 			int p2 = fileName.rfind(".", p1 - 1);
 			file_format = fileName.substr(p2 + 1, (p1 - p2) - 1);
+			// possible compression format
 			compression_format = fileName.substr(p1 + 1, (n - p1) + 1);
-			if (!valid()) throw BadFileException("Recieved Invalid File or Compression Format");
+			if (!valid()) throw std::invalid_argument("Recieved Invalid File or Compression Format");
 		}
 	}
 
@@ -131,6 +150,27 @@ namespace RDKit
 			// CASE 2: Smiles Format
 			else if (file_format == "smi")
 			{
+				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
+				return smsup;
+			}
+
+			else if (file_format == "csv")
+			{
+				opt.delimiter = ",";
+				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
+				return smsup;
+			}
+
+			else if (file_format == "txt")
+			{
+				opt.delimiter = "\t";
+				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
+				return smsup;
+			}
+
+			else if (file_format == "tsv")
+			{
+				opt.delimiter = "\t";
 				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
 				return smsup;
 			}
@@ -163,6 +203,27 @@ namespace RDKit
 			// CASE 2: Smiles Format
 			else if (file_format == "smi")
 			{
+				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
+				return smsup;
+			}
+
+			else if (file_format == "csv")
+			{
+				opt.delimiter = ",";
+				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
+				return smsup;
+			}
+
+			else if (file_format == "txt")
+			{
+				opt.delimiter = "\t";
+				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
+				return smsup;
+			}
+
+			else if (file_format == "tsv")
+			{
+				opt.delimiter = "\t";
 				SmilesMolSupplier *smsup = new SmilesMolSupplier(strm, opt.takeOwnership, opt.delimiter, opt.smilesColumn, opt.nameColumn, opt.titleLine, opt.sanitize);
 				return smsup;
 			}
