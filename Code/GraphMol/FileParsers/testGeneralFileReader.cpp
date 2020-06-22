@@ -15,14 +15,10 @@
 namespace io = boost::iostreams;
 using namespace RDKit;
 
-int testGeneralReader() {
 
-  // Test with SDF files
-  std::string rdbase = getenv("RDBASE");
-
+void testSdf(){
   // Open uncompressed SDF file format
-
-  std::cout << "Testing Supplier for uncompressed SDF files\n";
+  std::string rdbase = getenv("RDBASE");
   std::string fname = rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf";
   struct SupplierOption opt_sdf;
   GeneralFileReader gfr(fname, opt_sdf);
@@ -41,8 +37,6 @@ int testGeneralReader() {
   TEST_ASSERT(i == 16);
 
   // Open compressed SDF file format
-
-  std::cout << "Testing Supplier for compressed SDF files\n";
   fname = rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf.gz";
   struct SupplierOption opt_sdf2;
   opt_sdf2.takeOwnership = false;
@@ -59,11 +53,14 @@ int testGeneralReader() {
     }
   }
   TEST_ASSERT(i == 16);
+}
 
+
+void testSmi(){
 	// Open uncompressed SMI file format, try .csv formats
-	std::cout << "Testing Supplier for uncompressed SMILE files\n";
 	std::string mname;
-	fname = rdbase + "/Code/GraphMol/FileParsers/test_data/fewSmi.2.csv";
+	std::string rdbase = getenv("RDBASE");
+	std::string fname = rdbase + "/Code/GraphMol/FileParsers/test_data/fewSmi.2.csv";
 	struct SupplierOption opt_smi;
 	opt_smi.takeOwnership = false;
 	opt_smi.delimiter = ", ";
@@ -72,7 +69,7 @@ int testGeneralReader() {
 	opt_smi.titleLine = true;
 	GeneralFileReader gfr_smi(fname, opt_smi);
 	MolSupplier * nSup2 = gfr_smi.getSupplier();
-	i = 0;
+	unsigned int i = 0;
 	while(!nSup2->atEnd()){
 	  ROMol* mol = nSup2->next();
     if(i == 3){
@@ -86,10 +83,13 @@ int testGeneralReader() {
 	}
 	
   TEST_ASSERT(i == 10);
+}
+
+void testMae(){
 
   // Open uncompressed MAE file format  
-	std::cout << "Testing Supplier for uncompressed MAE files\n";
-	fname = rdbase + "/Code/GraphMol/FileParsers/test_data/props_test.mae";
+  std::string rdbase = getenv("RDBASE");
+	std::string fname = rdbase + "/Code/GraphMol/FileParsers/test_data/props_test.mae";
 	struct SupplierOption opt_sdf3;
 	GeneralFileReader gfr3(fname, opt_sdf3);
 	MolSupplier * maesup = gfr3.getSupplier();
@@ -123,7 +123,7 @@ int testGeneralReader() {
 			TEST_ASSERT(atom->hasProp("b_m_dummy"));
 			TEST_ASSERT(atom->getProp<bool> ("b_m_dummy") ==
 				static_cast<bool> (i % 2));
-		} else {
+		} else{
 			TEST_ASSERT(!atom->hasProp("b_m_dummy"));
 		}
 
@@ -146,7 +146,6 @@ int testGeneralReader() {
 
 		
 	// Open compressed MAE file, .maegz format
-	std::cout << "Testing Supplier for compressed MAE files\n";
 	fname = rdbase + "/Code/GraphMol/FileParsers/test_data/1kv1.maegz";
 	struct SupplierOption opt_cmae;
 	GeneralFileReader gfr_cmae(fname, opt_cmae);
@@ -160,16 +159,19 @@ int testGeneralReader() {
 	TEST_ASSERT(info->getChainId() == "A");
 	TEST_ASSERT(info->getResidueNumber() == 5);
 
+}
 
-	// Open uncompressed TDT file
-	std::cout << "Testing Supplier for uncompressed TDT files\n";
-	fname = rdbase + "/Code/GraphMol/FileParsers/test_data/acd_few.tdt";
+
+void testTdt(){
+  // Open uncompressed TDT file
+  std::string rdbase = getenv("RDBASE");
+	std::string fname = rdbase + "/Code/GraphMol/FileParsers/test_data/acd_few.tdt";
   struct SupplierOption opt_tdt;
 	opt_tdt.nameRecord = "PN";
 	GeneralFileReader gfr_tdt(fname, opt_tdt);
 	MolSupplier * suppl = gfr_tdt.getSupplier();
 
-	i = 0;
+	unsigned int i = 0;
 	while (!suppl->atEnd()) {
 		ROMol *nmol = suppl->next();
 		if (nmol) {
@@ -193,24 +195,28 @@ int testGeneralReader() {
 		}
 	}
 	TEST_ASSERT(i == 10);
-
-
-
-
-
-
-
-
-  return 1;
-
 }
 
 int main() {
   RDLog::InitLogs();
-
   BOOST_LOG(rdErrorLog) << "\n-----------------------------------------\n";
-  testGeneralReader();
-  BOOST_LOG(rdErrorLog) << "Finished: testGeneralReader()\n";
+  testSdf();
+  BOOST_LOG(rdErrorLog) << "Finished: testSdf()\n";
+  BOOST_LOG(rdErrorLog) << "-----------------------------------------\n\n";
+  
+  BOOST_LOG(rdErrorLog) << "\n-----------------------------------------\n";
+  testSmi();
+  BOOST_LOG(rdErrorLog) << "Finished: testSmi()\n";
+  BOOST_LOG(rdErrorLog) << "-----------------------------------------\n\n";
+  
+  BOOST_LOG(rdErrorLog) << "\n-----------------------------------------\n";
+  testMae();
+  BOOST_LOG(rdErrorLog) << "Finished: testMae()\n";
+  BOOST_LOG(rdErrorLog) << "-----------------------------------------\n\n";
+  
+  BOOST_LOG(rdErrorLog) << "\n-----------------------------------------\n";
+  testTdt();
+  BOOST_LOG(rdErrorLog) << "Finished: testTdt()\n";
   BOOST_LOG(rdErrorLog) << "-----------------------------------------\n\n";
 
   return 0;
