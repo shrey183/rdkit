@@ -42,7 +42,7 @@ namespace RDKit{
 		struct SupplierOptions d_opt;	//! d_options for the Mol Supplier 
 		public:
 			GeneralFileReader(const std::string& path);
-		  GeneralFileReader(const std::string& path, const struct SupplierOptions d_options);
+		  GeneralFileReader(const std::string& path, const struct SupplierOptions options);
 			//! Function to get the file name from the path
 			std::string getFileName();
 		  //! Function to check the validity of the file and compression format
@@ -62,11 +62,11 @@ namespace RDKit{
 		d_compressionFormat = "";
 	}
 
-	GeneralFileReader::GeneralFileReader(const std::string& path, const struct SupplierOptions d_options){
+	GeneralFileReader::GeneralFileReader(const std::string& path, const struct SupplierOptions options){
 		d_path = path;
 		d_fileFormat = "";
 		d_compressionFormat = "";
-		d_opt = d_options;
+		d_opt = options;
 	}
 
 	bool GeneralFileReader::valid(){
@@ -78,14 +78,14 @@ namespace RDKit{
 		}
 
 	
-		// Case 2: Either the filename has a file format or compression format or both
+		//! Case 2: Either the filename has a file format or compression format or both
 		bool flag_fileFormat = std::find(d_fileFormats.begin(), d_fileFormats.end(), d_fileFormat) != d_fileFormats.end();
 		
 		if (!d_compressionFormat.empty()){
 			bool flag_compressionFormat = std::find(d_compressionFormats.begin(), d_compressionFormats.end(), d_compressionFormat) 
 			                              != d_compressionFormats.end();
 			                              
-			// if the compression type is not valid then 
+			//! if the compression type is not valid then 
 			if(!flag_compressionFormat){
 				d_fileFormat = d_compressionFormat;
 				d_compressionFormat = "";
@@ -115,18 +115,18 @@ namespace RDKit{
 		if (dots == 0) throw std::invalid_argument("Recieved Invalid File Format, no extension or compression");
 
 		else if (dots == 1){
-			// there is a file format but no compression format
+			//! there is a file format but no compression format
 			int pos = fileName.find(".");
 			d_fileFormat = fileName.substr(pos + 1);
 			if (!valid()) throw std::invalid_argument("Recieved Invalid File Format");
 		}
 		else{
-			// there is a file and compression format
+			//! there is a file and compression format
 			int n = fileName.length();
 			int p1 = fileName.rfind(".");
 			int p2 = fileName.rfind(".", p1 - 1);
 			d_fileFormat = fileName.substr(p2 + 1, (p1 - p2) - 1);
-			// possible compression format
+			//! possible compression format
 			d_compressionFormat = fileName.substr(p1 + 1, (n - p1) + 1);
 			if (!valid()) throw std::invalid_argument("Recieved Invalid File or Compression Format");
 		}

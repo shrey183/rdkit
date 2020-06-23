@@ -44,7 +44,7 @@ void testSdf(){
     }
   }
   TEST_ASSERT(i == 16);
-	
+		
 
   //! Open compressed SDF file format
   fname = rdbase + "/Code/GraphMol/FileParsers/test_data/NCI_aids_few.sdf.gz";
@@ -63,6 +63,9 @@ void testSdf(){
     }
   }
   TEST_ASSERT(i == 16);
+	
+	delete sdsup;
+	delete sdsup2;	
 }
 
 
@@ -151,8 +154,6 @@ void testMae(){
 			std::to_string(19 - i));
 	}
 		TEST_ASSERT(maesup->atEnd());
-		delete maesup;
-
 		
 	//! Open compressed MAE file, .maegz format
 	fname = rdbase + "/Code/GraphMol/FileParsers/test_data/1kv1.maegz";
@@ -167,6 +168,8 @@ void testMae(){
 	TEST_ASSERT(info->getResidueName() == "ARG ");
 	TEST_ASSERT(info->getChainId() == "A");
 	TEST_ASSERT(info->getResidueNumber() == 5);
+	
+	delete maesup;
 	delete cmaesup;
 }
 
